@@ -173,12 +173,20 @@ public class ClientApp extends Application {
 
 		
 		ListView<String> messagesFormServerView = new ListView<String>();
-		messagesFormServerView.setMaxSize(520, 195);
+		messagesFormServerView.setMaxSize(250, 195);
 		GridPane.setMargin(messagesFormServerView, new Insets(20));
 
 		ObservableList<String> messagesList = client.getClientLog();
 		messagesFormServerView.setItems(messagesList);
-		
+
+		ObservableList<String> allClients = FXCollections.observableArrayList(
+			"Client 1",
+			"Client 2",
+			"Client 3"
+		);
+
+		ComboBox comboBox = new ComboBox(allClients);
+
 		// HBOX to put clickable button images
 		HBox hbox = new HBox();	
 		hbox.setPadding(new Insets(15,10,15,10));
@@ -188,6 +196,10 @@ public class ClientApp extends Application {
 		HBox hbox2 = new HBox();
 		hbox2.setPadding(new Insets(35,10,15,10));
 		hbox2.setSpacing(30);
+
+		HBox hbox3 = new HBox();
+		hbox3.setPadding(new Insets(15,10,15,10));
+		hbox3.setSpacing(20);
 		
 		
 		Label youLabel = new Label();
@@ -206,6 +218,9 @@ public class ClientApp extends Application {
 		//BUTTONS for play again and quit
 		Button playAgain = new Button("Play Again");
 		Button quit = new Button("Quit");
+
+		Button challengeButton = new Button("Challenge");
+		Button declineButton = new Button("Decline");
 		
 		//Set preferred, max and min size to lock the size of the buttons
 		rock.setPrefSize(100, 150);
@@ -227,9 +242,14 @@ public class ClientApp extends Application {
 		spock.setPrefSize(100, 150);
 		spock.setMaxSize(100, 150);
 		spock.setMinSize(100, 150);
-		
-		
-		
+
+		challengeButton.setPrefSize(100, 25);
+		challengeButton.setMaxSize(100, 25);
+		challengeButton.setMinSize(100,25);
+
+		declineButton.setPrefSize(100, 25);
+		declineButton.setMaxSize(100, 25);
+		declineButton.setMinSize(100,25);
 		
 		//IMAGES for RPSLS
 		Image rockImage = new Image("rock1.png");
@@ -271,6 +291,7 @@ public class ClientApp extends Application {
 		// add all buttons to HBOX
         hbox.getChildren().addAll(rock, paper, scissors, lizard, spock);
         hbox2.getChildren().addAll(playAgain, quit);
+        hbox3.getChildren().addAll(challengeButton, declineButton);
 		
         
         //====================================
@@ -308,6 +329,14 @@ public class ClientApp extends Application {
         	System.exit(0);
         });
 
+        challengeButton.setOnAction(e -> {
+
+		});
+
+		declineButton.setOnAction(e -> {
+
+		});
+
         //END OF ACTION EVENTS
         //====================================
 
@@ -319,8 +348,10 @@ public class ClientApp extends Application {
 		
 		//add child nodes to root 
 		root.add(messagesFormServerView, 1, 0);
-		root.add(hbox, 1, 1);
-		root.add(hbox2, 1, 2);
+		root.add(comboBox, 2, 0);
+		root.add(hbox, 1, 2);
+		root.add(hbox2, 1, 3);
+		root.add(hbox3, 2, 1);
 		
 		
 			
