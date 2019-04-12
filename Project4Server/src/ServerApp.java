@@ -1,8 +1,6 @@
 
 import java.net.SocketException;
-import java.util.ArrayList;
 import java.util.HashMap;
-
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -25,7 +23,6 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 public class ServerApp extends Application{
-	public static ArrayList<Thread> threads;
 	private HashMap<String, Scene> sceneMap;
 	private Scene portScene;
 	private Scene serverScene;
@@ -45,8 +42,7 @@ public class ServerApp extends Application{
 		
 		myStage = primaryStage;
 		
-		//instantiate threads and sceneMap
-		threads = new ArrayList<Thread>();
+		//instantiate sceneMap
 		this.sceneMap = new HashMap<String, Scene>();
 		
 		//set the Welcome scene to get port number from user 
@@ -196,8 +192,7 @@ public class ServerApp extends Application{
 				serverThread = new Thread(server);
 				serverThread.setDaemon(true);
 				serverThread.start();
-				//add threads to the list
-				threads.add(serverThread);
+				
 
 				
 				//add message to Login View in the GUI to notify the user 
@@ -220,8 +215,7 @@ public class ServerApp extends Application{
 				server.setRunning(true);
 				//closes server Socket and avoids Null Exception
 				if(server.serverSocket != null) {
-					server.serverSocket.close();
-					threads.remove(threads.indexOf(serverThread));				
+					server.serverSocket.close();				
 					turnOffButton.setDisable(true);	
 				}
 

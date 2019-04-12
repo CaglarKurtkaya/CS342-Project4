@@ -1,6 +1,5 @@
 import java.io.IOException;
 import java.net.ConnectException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import javafx.application.Application;
 import javafx.collections.ObservableList;
@@ -8,7 +7,10 @@ import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
@@ -25,7 +27,6 @@ import javafx.stage.Stage;
 
 
 public class ClientApp extends Application {
-	private ArrayList<Thread> threads;
 	private Client client;	
 	private HashMap<String, Scene> sceneMap;   //to hold scenes
 	private Stage myStage;   // to be able to change scene of the primaryStage
@@ -53,11 +54,8 @@ public class ClientApp extends Application {
 		
 		//add it the hashMap
 		this.sceneMap.put("Welcome", welcomeScene);
-		
-		// Instantiate a collection of Thread arrayList
-		threads = new ArrayList<Thread>();
-		
-		
+				
+
 		myStage.setTitle("Client App");
 		myStage.setScene(sceneMap.get("Welcome"));
 		myStage.show();
@@ -91,11 +89,18 @@ public class ClientApp extends Application {
 		
 		
 		
+		
+		
 		//TextField for NAME, IP AND PORT for Client to Choose
 		TextField nameField = new TextField();
 		TextField ipField = new TextField();
 		TextField portField = new TextField();
 		
+		
+		//TEST
+		nameField.setText("Caglar");
+		ipField.setText("127.0.0.1");
+		portField.setText("5555");
 		
 		Button enterButton = new Button("Connect");
 		
@@ -104,13 +109,13 @@ public class ClientApp extends Application {
 		enterButton.setOnAction(event->{
 			try {
 			// Create a client 
-			client = new Client(nameField.getText(), ipField.getText(),Integer.parseInt(portField.getText()));
+			client = new Client(nameField.getText(), ipField.getText(),Integer.parseInt(portField.getText()), this);
 			
 			//Start a thread for the client
 			Thread clientThread = new Thread(client);
 			clientThread.setDaemon(true);
 			clientThread.start();
-			threads.add(clientThread);
+			
 			
 			
 			//create and set gameScene then set it to our stage
@@ -163,30 +168,39 @@ public class ClientApp extends Application {
 		root.setVgap(10);
 		
 		
-		root.getColumnConstraints().add(new ColumnConstraints(130)); // column 0 is 130 wide
+		root.getColumnConstraints().add(new ColumnConstraints(330)); // column 0 is 130 wide
 		root.getColumnConstraints().add(new ColumnConstraints(540)); // column 1 is 540 wide
-		root.getColumnConstraints().add(new ColumnConstraints(130)); // column 2 is 130 wide
+		
 
 		root.getRowConstraints().add(new RowConstraints(225)); // row 0 is 225 wide
 		root.getRowConstraints().add(new RowConstraints(150)); // row 1 is 150 wide
-		root.getRowConstraints().add(new RowConstraints(225)); // row 2 is 225 wide
 
 		
-		ListView<String> messagesFormServerView = new ListView<String>();
-		messagesFormServerView.setMaxSize(250, 195);
-		GridPane.setMargin(messagesFormServerView, new Insets(20));
+		ListView<String> messagesFromServerView = new ListView<String>();
+		messagesFromServerView.setMaxSize(520, 195);
+		GridPane.setMargin(messagesFromServerView, new Insets(20));
+		
+		
 
 		ObservableList<String> messagesList = client.getClientLog();
-		messagesFormServerView.setItems(messagesList);
-
-		ObservableList<String> allClients = FXCollections.observableArrayList(
-			"Client 1",
-			"Client 2",
-			"Client 3"
-		);
-
-		ComboBox comboBox = new ComboBox(allClients);
-
+		messagesFromServerView.setItems(messagesList);
+		
+		
+		/*
+		 * Added for project 4
+		 * This is where we show connected player on the server to challenge
+		 */
+		ListView<String> challangeView = new ListView<String>();
+		challangeView.setMaxSize(150, 200);
+		
+		
+		ObservableList<String> challangeList = client.getPlayerList();
+		challangeView.setItems(challangeList);
+		
+		
+		
+		
+		
 		// HBOX to put clickable button images
 		HBox hbox = new HBox();	
 		hbox.setPadding(new Insets(15,10,15,10));
@@ -196,10 +210,6 @@ public class ClientApp extends Application {
 		HBox hbox2 = new HBox();
 		hbox2.setPadding(new Insets(35,10,15,10));
 		hbox2.setSpacing(30);
-
-		HBox hbox3 = new HBox();
-		hbox3.setPadding(new Insets(15,10,15,10));
-		hbox3.setSpacing(20);
 		
 		
 		Label youLabel = new Label();
@@ -215,12 +225,9 @@ public class ClientApp extends Application {
 		Button lizard = new Button();
 		Button spock = new Button();
 		
-		//BUTTONS for play again and quit
-		Button playAgain = new Button("Play Again");
+		//BUTTONS 
 		Button quit = new Button("Quit");
-
-		Button challengeButton = new Button("Challenge");
-		Button declineButton = new Button("Decline");
+		Button challangeButton = new Button("Challange");
 		
 		//Set preferred, max and min size to lock the size of the buttons
 		rock.setPrefSize(100, 150);
@@ -242,14 +249,9 @@ public class ClientApp extends Application {
 		spock.setPrefSize(100, 150);
 		spock.setMaxSize(100, 150);
 		spock.setMinSize(100, 150);
-
-		challengeButton.setPrefSize(100, 25);
-		challengeButton.setMaxSize(100, 25);
-		challengeButton.setMinSize(100,25);
-
-		declineButton.setPrefSize(100, 25);
-		declineButton.setMaxSize(100, 25);
-		declineButton.setMinSize(100,25);
+		
+		
+		
 		
 		//IMAGES for RPSLS
 		Image rockImage = new Image("rock1.png");
@@ -290,8 +292,7 @@ public class ClientApp extends Application {
 		
 		// add all buttons to HBOX
         hbox.getChildren().addAll(rock, paper, scissors, lizard, spock);
-        hbox2.getChildren().addAll(playAgain, quit);
-        hbox3.getChildren().addAll(challengeButton, declineButton);
+        hbox2.getChildren().addAll(challangeButton, quit);
 		
         
         //====================================
@@ -302,40 +303,72 @@ public class ClientApp extends Application {
 
 
         rock.setOnAction(event->{
-        	client.sendMessage("rock");
+        	try {
+				client.sendMessage("rock");
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         });
         
         paper.setOnAction(event->{
-        	client.sendMessage("paper");
+        	try {
+				client.sendMessage("paper");
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         });
         
         scissors.setOnAction(event->{
-        	client.sendMessage("scissors");
+        	try {
+				client.sendMessage("scissors");
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         });
         
         lizard.setOnAction(event->{
-        	client.sendMessage("lizard");
+        	try {
+				client.sendMessage("lizard");
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         });
         
         spock.setOnAction(event->{
-        	client.sendMessage("spock");
+        	try {
+				client.sendMessage("spock");
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         });
    
-        playAgain.setOnAction(event->{
-        	client.sendMessage("playagain");
-        });
         
         quit.setOnAction(event->{
         	System.exit(0);
         });
-
-        challengeButton.setOnAction(e -> {
-
-		});
-
-		declineButton.setOnAction(e -> {
-
-		});
+        
+        
+        challangeButton.setOnAction(event->{
+        	String name = challangeView.getSelectionModel().getSelectedItem(); 
+        	if (name == null) {
+        		System.out.println("Please select a player");
+        	}
+        	else {
+        		//System.out.println(challangeView.getSelectionModel().getSelectedItem());
+        		try {
+					client.challenge(name);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        	}
+        	
+        });
 
         //END OF ACTION EVENTS
         //====================================
@@ -344,14 +377,16 @@ public class ClientApp extends Application {
         
         
         
-		root.setPrefSize(900, 600);	
+		root.setPrefSize(400, 600);	
 		
 		//add child nodes to root 
-		root.add(messagesFormServerView, 1, 0);
-		root.add(comboBox, 2, 0);
-		root.add(hbox, 1, 2);
-		root.add(hbox2, 1, 3);
-		root.add(hbox3, 2, 1);
+		root.add(challangeView, 0, 0);
+		root.add(hbox2, 0, 1);
+		root.add(messagesFromServerView, 1, 0);
+		root.add(hbox, 1, 1);
+		
+		
+		
 		
 		
 			
@@ -368,8 +403,20 @@ public class ClientApp extends Application {
 	public void stop() throws Exception {
 		
 		super.stop();
-		for (Thread thread: threads){
-			thread.interrupt();
+		Thread.currentThread().interrupt();
+	}
+	
+	public void challangePopup(String name) {
+		Alert alert = new Alert(AlertType.CONFIRMATION, name + " is challanging you, do you accept?", ButtonType.YES, ButtonType.NO);
+		alert.showAndWait();
+
+		if (alert.getResult() == ButtonType.YES) {
+		    try {
+				client.acceptChallenge(name);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 

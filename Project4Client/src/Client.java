@@ -1,42 +1,55 @@
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-
+import java.util.HashMap;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+
 public class Client implements Runnable {
 	
 	private Socket clientSocket;
-	private BufferedReader in;
-	private PrintWriter out;
+	private ObjectInputStream in;
+	private ObjectOutputStream out;
 	private String clientName;	
 	private ObservableList<String> clientLog;
+	private ObservableList<String> playerList;
 	private int clientScore;
+	private ClientApp clientApp;
+	
+	
+
 	
 	
 	
 //==================================================================================
+	//Constructors
+
 	public Client() {
-		
+
 	}
 	
-	//Constructor
-	public Client(String givenClientName,String ipAdresss, int port) throws UnknownHostException,IOException{
+	public Client(String givenClientName,String ipAdresss, int port, ClientApp ca) throws UnknownHostException,IOException{
 
 		clientSocket = new Socket(ipAdresss, port);
-		in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-		out = new PrintWriter(clientSocket.getOutputStream(), true);
+		
+		out = new ObjectOutputStream (clientSocket.getOutputStream());
+		in = new ObjectInputStream(clientSocket.getInputStream());
+		
+		
+	
 		clientLog = FXCollections.observableArrayList();
+		playerList =  FXCollections.observableArrayList();
 		clientName = givenClientName;
+		clientApp = ca;
 
 		//send client name to server
-		out.println(clientName);
+		out.writeObject(clientName);
 		this.clientScore = 0;			
 	}
 
@@ -46,10 +59,6 @@ public class Client implements Runnable {
 		this.clientScore = clientScore;
 	}
 	
-	public void setClientLog(ObservableList<String> oList) {
-		this.clientLog = oList;
-	}
-	
 	
 //==================================================================================
 	//Getters
@@ -57,6 +66,10 @@ public class Client implements Runnable {
 
 	public ObservableList<String> getClientLog(){
 		return this.clientLog;
+	}
+	
+	public ObservableList<String> getPlayerList(){
+		return this.playerList;
 	}
 	
 	public int getClientScore() {
@@ -76,13 +89,49 @@ public class Client implements Runnable {
 
 			try {
 				
-				//reads incoming messages 
-				final String incominMessage = in.readLine();
+				//reads incoming messages 				
+				Serializable incominMessage = (Serializable) in.readObject();
+	
 				
 				
 				Platform.runLater(new Runnable() {
 					public void run() {
-						clientLog.add(incominMessage);
+						
+						//check if incoming data is HashMap
+						if (incominMessage instanceof HashMap) {
+							//clear the playerList			
+							playerList.clear();
+							
+							
+							for (Object key : ((HashMap<?, ?>) incominMessage).keySet()) {
+								
+								String str = (String) ((HashMap<?, ?>) incominMessage).get(key);
+								playerList.add(str);
+								
+							}
+							//setPlayerList(plist);
+							System.out.println("aaa");
+							
+							
+						}
+						
+						//string
+						if (incominMessage instanceof String) {
+							
+							String msgStr = incominMessage.toString();
+							if (msgStr.contains("challenge:")) {
+								String[] exploded = msgStr.split("challenge:");
+								//call this method which will then popup challange request in client GUI
+								handleChallenge(exploded[1]);
+							}
+							else {
+								clientLog.add((String) incominMessage);
+							}
+							
+							
+							
+							
+						}
 					}
 				});
 
@@ -98,6 +147,9 @@ public class Client implements Runnable {
 			catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 
 		}
@@ -107,9 +159,25 @@ public class Client implements Runnable {
 
 //==================================================================================
 
-	//sends messages 
-	public void sendMessage(String input) {
-		this.out.println(input);
+	public void challenge(String name) throws Exception {
+		this.sendMessage("challenge:" + name);
+	}
+	
+	//this method trigers the popup challenge notification in client App
+	public void handleChallenge(String name) {
+		this.clientApp.challangePopup(name);
+	}
+	
+	// this method will be called in client App when user accepts challenge
+	public void acceptChallenge(String name) throws Exception {
+		this.sendMessage("accept:" + name);
+	}
+
+	
+	public void sendMessage(Serializable data) throws Exception{
+		out.writeObject(data);
+		out.flush();
+		
 	}
 	
 
