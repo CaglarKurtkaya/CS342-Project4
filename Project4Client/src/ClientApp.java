@@ -22,6 +22,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.collections.FXCollections;
+import javafx.scene.control.ComboBox;
 
 
 
@@ -76,10 +78,10 @@ public class ClientApp extends Application {
 		root.setAlignment(Pos.CENTER);
 		
 		//Label for NAME, IP AND PORT for Client to Choose
-		Label nameLabel = new Label("Name ");
+		Label nameLabel = new Label("Name");
 		GridPane.setHalignment(nameLabel, HPos.RIGHT);
 		
-		Label ipLabel = new Label("IP Adrress ");
+		Label ipLabel = new Label("IP Address ");
 		GridPane.setHalignment(ipLabel, HPos.RIGHT);
 
 		Label portLabel = new Label("Port Number");
@@ -126,7 +128,7 @@ public class ClientApp extends Application {
 			
 			} catch (ConnectException  e1) {
 				errorLabel.setTextFill(Color.RED);
-				errorLabel.setText("Please Check IP Adrress");
+				errorLabel.setText("Please Check IP Address");
 				
 				
 			} catch (NumberFormatException | IOException e) {	
@@ -190,12 +192,18 @@ public class ClientApp extends Application {
 		 * Added for project 4
 		 * This is where we show connected player on the server to challenge
 		 */
-		ListView<String> challangeView = new ListView<String>();
-		challangeView.setMaxSize(150, 200);
+		//ListView<String> challengeView = new ListView<String>();
+		//challengeView.setMaxSize(150, 200);
+
+		ObservableList<String> challengeList = FXCollections.observableArrayList(client.getPlayerList());
+
+		ComboBox comboBox = new ComboBox(challengeList);
+
+
 		
 		
-		ObservableList<String> challangeList = client.getPlayerList();
-		challangeView.setItems(challangeList);
+		//ObservableList<String> challengeList = client.getPlayerList();
+		//challengeView.setItems(challengeList);
 		
 		
 		
@@ -227,7 +235,7 @@ public class ClientApp extends Application {
 		
 		//BUTTONS 
 		Button quit = new Button("Quit");
-		Button challangeButton = new Button("Challange");
+		Button challengeButton = new Button("Challenge");
 		
 		//Set preferred, max and min size to lock the size of the buttons
 		rock.setPrefSize(100, 150);
@@ -292,7 +300,7 @@ public class ClientApp extends Application {
 		
 		// add all buttons to HBOX
         hbox.getChildren().addAll(rock, paper, scissors, lizard, spock);
-        hbox2.getChildren().addAll(challangeButton, quit);
+        hbox2.getChildren().addAll(challengeButton, quit);
 		
         
         //====================================
@@ -351,10 +359,15 @@ public class ClientApp extends Application {
         quit.setOnAction(event->{
         	System.exit(0);
         });
+
+        comboBox.setOnMousePressed(e -> {
+			comboBox.setItems(client.getPlayerList());
+		});
         
         
-        challangeButton.setOnAction(event->{
-        	String name = challangeView.getSelectionModel().getSelectedItem(); 
+        challengeButton.setOnAction(event->{
+        	//String name = challengeView.getSelectionModel().getSelectedItem();
+			String name = comboBox.getSelectionModel().getSelectedItem().toString();
         	if (name == null) {
         		System.out.println("Please select a player");
         	}
@@ -380,7 +393,7 @@ public class ClientApp extends Application {
 		root.setPrefSize(400, 600);	
 		
 		//add child nodes to root 
-		root.add(challangeView, 0, 0);
+		root.add(comboBox, 0, 0);
 		root.add(hbox2, 0, 1);
 		root.add(messagesFromServerView, 1, 0);
 		root.add(hbox, 1, 1);
