@@ -432,5 +432,27 @@ public class ClientApp extends Application {
 			}
 		}
 	}
+	
+//	*************************************************************************************
+//	popup for already existing name/player
+	
+// 	To close the DialogBox click the cancel Button
+	
+	public String sameName(String name) {
+		System.out.println("in SameName");
+		
+		TextInputDialog newName = new TextInputDialog("Enter new name");
+		newName.setTitle("Duplicate Name");
+		newName.setContentText("A player with that name already exists\nPlease enter a different name");
+		
+		Optional<String> result = newName.showAndWait();
+		
+		if(result.isPresent()) {
+			return result.get();
+		}
+		
+	return name;	
+	
+	}
 
 }
