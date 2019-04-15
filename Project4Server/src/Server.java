@@ -268,6 +268,17 @@ public class Server implements Runnable {
 			// We first check if player2 already is in a game
 			if (player2.getGameStarted() == true) {
 				player1.getMessage(p2 + " is playing another game. please wait and try again.");
+
+				//Make player1 wait
+                try {
+                    player1.wait();
+                } catch (InterruptedException e) { }
+
+                //If player2 finished the game, show player2 that player1 is asking for challenge
+                if(player2.getGameStarted() == false) {
+
+                    player2.askChallange(player1);
+                }
 			}
 			else {
 				// if given boolean value is true, challange has been accepted. Start the game!
