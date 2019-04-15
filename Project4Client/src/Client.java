@@ -60,6 +60,11 @@ public class Client implements Runnable {
 	}
 	
 	
+	public void changeDupName(String name){
+		this.clientName = name;
+	}
+	
+	
 //==================================================================================
 	//Getters
 	
@@ -101,14 +106,25 @@ public class Client implements Runnable {
 						if (incominMessage instanceof HashMap) {
 							//clear the playerList			
 							playerList.clear();
-							
+							String n = null;
 							
 							for (Object key : ((HashMap<?, ?>) incominMessage).keySet()) {
 								
 								String str = (String) ((HashMap<?, ?>) incominMessage).get(key);
-								playerList.add(str);
+	
+								
+								if(playerList.contains(str)){
+									n = clientApp.sameName(str);
+									playerList.add(n);
+									changeDupName(n);
+								}
+								else{
+									playerList.add(str);
+								}
 								
 							}
+								
+							
 							//setPlayerList(plist);
 							System.out.println("aaa");
 							
